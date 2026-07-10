@@ -1,2 +1,6 @@
 # Ignore Harbor job results and logs
 jobs/
+
+# Ignore downloaded dataset directory
+terminal-bench-2-1/
+
