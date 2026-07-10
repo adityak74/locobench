@@ -128,6 +128,43 @@ harbor run \
 
 ---
 
+## Daily Automated Leaderboard Pipeline
+
+For everyday testing of new model releases from Ollama, running the full 89-task benchmark (which can take 15+ hours) is often not feasible. 
+
+Instead, use `run_daily.sh` which executes a **curated subset of 8 representative tasks** (covering Unix skills, log parsing, data processing, async coding, compilers, and distributed systems parallelization). The script automatically parses the results, updates a local `leaderboard.json`, and commits/pushes the updates to GitHub.
+
+### How to Run the Daily Pipeline
+Run the script on your Mac Mini server, passing the base Ollama model name:
+```bash
+./run_daily.sh qwen3.6:35b-mlx
+```
+This will automatically:
+1. Check if the optimized `qwen3.6:35b-mlx-64k` model exists, and create it via `Modelfile` if missing.
+2. Run Harbor on the 8 selected tasks with custom high timeouts.
+3. Call `update_leaderboard.py` to parse `result.json`.
+4. Update `leaderboard.json` in the root of the repository.
+5. Push the updated `leaderboard.json` to GitHub.
+
+### Integrating with Your Website
+The pipeline outputs a flat JSON array sorted by score in `leaderboard.json` which has the following schema:
+```json
+[
+    {
+        "model": "qwen3.6:35b-mlx-64k",
+        "date": "2026-07-09",
+        "mean_reward": 0.875,
+        "duration_minutes": 115.4,
+        "input_tokens": 184510,
+        "output_tokens": 42091,
+        "cache_tokens": 0
+    }
+]
+```
+You can read this JSON file directly in your frontend code (e.g. using `fetch('/path/to/leaderboard.json')`) to display a dynamically updated leaderboard table on your website.
+
+---
+
 ## Analyzing Results
 
 Launch Harbor's local UI viewer to inspect task trajectories, terminal inputs/outputs, rewards, and token logs:
@@ -135,3 +172,4 @@ Launch Harbor's local UI viewer to inspect task trajectories, terminal inputs/ou
 harbor view jobs
 ```
 This opens the job comparison dashboard in your web browser.
+
